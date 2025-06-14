@@ -23,5 +23,55 @@
       "type": "image/svg+xml",
       "purpose": "maskable any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "AI Companion",
+      "short_name": "AI Chat",
+      "description": "Chat with AI for emotional support",
+      "url": "/?action=ai-chat",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text x='48' y='65' text-anchor='middle' font-size='60'>🤖</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Find Friend",
+      "short_name": "Chat",
+      "description": "Connect with anonymous friends",
+      "url": "/?action=find-friend",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text x='48' y='65' text-anchor='middle' font-size='60'>🎯</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Wellness Center",
+      "short_name": "Wellness",
+      "description": "Access wellness tools and exercises",
+      "url": "/?action=wellness",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text x='48' y='65' text-anchor='middle' font-size='60'>🌱</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Crisis Support",
+      "short_name": "Help",
+      "description": "Emergency mental health resources",
+      "url": "/?action=crisis",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text x='48' y='65' text-anchor='middle' font-size='60'>🆘</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    }
   ]
 }
