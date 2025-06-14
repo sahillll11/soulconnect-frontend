@@ -1,4 +1,4 @@
-const CACHE_NAME = 'soulconnect-mobile-v2';
+const CACHE_NAME = 'soulconnect-pwa-v3.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -6,17 +6,40 @@ const urlsToCache = [
   '/sw.js'
 ];
 
-// Install event
+// Install event - cache resources
 self.addEventListener('install', (event) => {
-  console.log('SoulConnect Mobile App installing...');
+  console.log('SoulConnect PWA installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('Caching SoulConnect resources...');
         return cache.addAll(urlsToCache);
       })
+      .then(() => {
+        console.log('SoulConnect PWA cached successfully');
+        return self.skipWaiting();
+      })
   );
-  self.skipWaiting();
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('SoulConnect PWA activating...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('SoulConnect PWA activated');
+      return self.clients.claim();
+    })
+  );
 });
 
 // Fetch event
@@ -78,8 +101,13 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'open',
-        title: 'Open Chat',
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="%239333ea"/><text y="65" font-size="50" text-anchor="middle" x="48" fill="white">💬</text></svg>'
+        title: 'Open SoulConnect',
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="%232563eb"/><text y="65" font-size="40" text-anchor="middle" x="48" fill="white">💙</text></svg>'
+      },
+      {
+        action: 'ai-chat',
+        title: 'Chat with AI',
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="%233b82f6"/><text y="65" font-size="40" text-anchor="middle" x="48" fill="white">🤖</text></svg>'
       },
       {
         action: 'close',
@@ -93,15 +121,40 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click
+// Enhanced notification click handling
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
+  let urlToOpen = '/';
+
+  if (event.action === 'ai-chat') {
+    urlToOpen = '/?action=ai-chat';
+  } else if (event.action === 'open') {
+    urlToOpen = '/';
+  } else if (event.action === 'close') {
+    return; // Just close, don't open anything
   }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      // Check if SoulConnect is already open
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Focus existing window and navigate if needed
+          if (urlToOpen !== '/') {
+            client.navigate(urlToOpen);
+          }
+          return client.focus();
+        }
+      }
+
+      // Open new window if not already open
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });
 
 // Background sync
