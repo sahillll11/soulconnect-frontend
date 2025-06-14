@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoulConnect - Anonymous Friendship Builder</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="SoulConnect">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SoulConnect">
+    <meta name="theme-color" content="#2563eb">
+    
+    <style>
+        :root {
+            --button-padding: 16px;
+            --font-size-base: 16px;
+            --card-padding: 24px;
+            --gap-size: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #dbeafe 0%, #fae8ff 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #dbeafe 0%, #fae8ff 100%); }
+            50% { background: linear-gradient(135deg, #f0f9ff 0%, #f3e8ff 100%); }
+        }
+
+        /* Device-specific layouts */
+        .app-container {
+            padding: 10px;
+            max-width: 100vw;
+            margin: 0 auto;
+        }
+
+        /* Mobile Portrait (320px - 480px) */
+        @media screen and (max-width: 480px) {
+            .app-container {
+                padding: 8px;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header .title {
+                font-size: 2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .feature {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            .button {
+                padding: 14px;
+                font-size: 1rem;
+            }
+
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                top: 15px;
+                right: 15px;
+            }
+
+            #chatMessages {
+                height: 250px !important;
+            }
+        }
+
+        /* Mobile Landscape (481px - 768px) */
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+
+            .container {
+                max-width: 600px;
+            }
+
+            .features {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+
+            .dashboard-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            #chatMessages {
+                height: 350px !important;
+            }
+        }
+
+        /* Tablet (769px - 1024px) */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            .app-container {
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 700px;
+            }
+
+            .features {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+
+            .dashboard-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .chat-layout {
+                display: grid;
+                grid-template-columns: 1fr 300px;
+                gap: 20px;
+            }
+
+            #chatMessages {
+                height: 400px !important;
+            }
+        }
+
+        /* Desktop (1025px+) */
+        @media screen and (min-width: 1025px) {
+            .app-container {
+                padding: 30px;
+            }
+
+            .container {
+                max-width: 900px;
+            }
+
+            .features {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+
+            .dashboard-layout {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 30px;
+            }
+
+            .chat-layout {
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 25px;
+            }
+
+            #chatMessages {
+                height: 500px !important;
+            }
+
+            .feature-showcase {
+                position: fixed;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                max-width: 250px;
+                z-index: 100;
+                display: none;
+            }
+
+            .feature-showcase.show {
+                display: block;
+            }
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .feature {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .feature-desc {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        
+        .button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .button.green {
+            background: #16a34a;
+        }
+        
+        .button.green:hover {
+            background: #15803d;
+        }
+        
+        .button.purple {
+            background: #9333ea;
+        }
+        
+        .button.purple:hover {
+            background: #7c3aed;
+        }
+        
+        .success {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .success-title {
+            color: #1e40af;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .success-text {
+            color: #1e40af;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .install-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .install-prompt.show {
+            display: block;
+        }
+        
+        .install-btn {
+            background: white;
+            color: #2563eb;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin-left: 12px;
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        /* Dark Mode Styles */
+        .dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #f1f5f9;
+        }
+
+        .dark-mode .card {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        .dark-mode .feature {
+            background: #475569;
+            color: #f1f5f9;
+        }
+
+        .dark-mode input, .dark-mode select {
+            background: #475569;
+            color: #f1f5f9;
+            border-color: #64748b;
+        }
+
+        /* Voice Message Styles */
+        .voice-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover {
+            background: #b91c1c;
+            transform: scale(1.1);
+        }
+
+        .voice-btn.recording {
+            background: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Emoji Reaction Styles */
+        .emoji-reactions {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .emoji-btn {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 12px;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .emoji-btn:hover {
+            background: rgba(37, 99, 235, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: #1d4ed8;
+            transform: scale(1.1);
+        }
+
+        /* Professional AI Chat Styling */
+        .quick-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        /* Pulse animation for typing indicator */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Enhanced button styles */
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* AI personality selector styling */
+        #aiPersonalitySelect {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        #aiPersonalitySelect:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <!-- Install Prompt -->
+    <div id="installPrompt" class="install-prompt">
+        <span>📱 Install SoulConnect as an app!</span>
+        <button id="installBtn" class="install-btn">Install</button>
+        <button id="dismissBtn" style="background: none; border: none; color: white; margin-left: 8px; cursor: pointer;">✕</button>
+    </div>
+
+    <div class="app-container">
+        <div class="container">
+            <!-- Device Info Badge (Hidden) -->
+            <div id="deviceInfo" style="display: none;"></div>
+
+            <!-- Feature Tour Button (Hidden - accessible via settings) -->
+            <div style="display: none;">
+                <button onclick="startFeatureTour()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; cursor: pointer;">
+                    🎯 Take Feature Tour
+                </button>
+            </div>
+
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">SoulConnect</h1>
+                <p class="subtitle">Anonymous Friendship Builder</p>
+                <p class="description">Talk to someone who understands you</p>
+                <div class="status-badge">🎉 Fully Working!</div>
+            </div>
+
+        <!-- Features -->
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <div class="feature-title">Anonymous Chat</div>
+                <div class="feature-desc">Safe conversations</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">❤️</div>
+                <div class="feature-title">Emotional Support</div>
+                <div class="feature-desc">Find understanding</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-title">Safe & Secure</div>
+                <div class="feature-desc">Privacy first</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Smart Matching</div>
+                <div class="feature-desc">Mood-based</div>
+            </div>
+        </div>
+
+        <!-- Auth Section -->
+        <div class="card" id="authSection">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #1f2937;" id="authTitle">Create Account</h2>
+
+            <div id="errorMessage" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px; display: none;"></div>
+
+            <form id="authForm">
+                <input type="text" id="username" placeholder="Username" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;" required>
+
+                <input type="email" id="email" placeholder="Email" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;" required>
+
+                <input type="password" id="password" placeholder="Password" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;" required>
+
+                <select id="avatar" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+                    <option value="fox">🦊 Fox</option>
+                    <option value="cat">🐱 Cat</option>
+                    <option value="dog">🐶 Dog</option>
+                    <option value="bear">🐻 Bear</option>
+                    <option value="rabbit">🐰 Rabbit</option>
+                </select>
+
+                <select id="mood" style="width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+                    <option value="happy">😊 Happy</option>
+                    <option value="sad">😢 Sad</option>
+                    <option value="anxious">😰 Anxious</option>
+                    <option value="lonely">😔 Lonely</option>
+                    <option value="excited">🤗 Excited</option>
+                </select>
+
+                <button type="submit" id="submitBtn" class="button">
+                    📝 Create Account
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 16px;">
+                <button onclick="toggleAuthMode()" id="switchBtn" style="background: none; border: none; color: #2563eb; font-weight: 500; cursor: pointer;">
+                    Already have an account? Sign in
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section (Hidden initially) -->
+        <div class="card" id="dashboardSection" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #1f2937;">Welcome to SoulConnect!</h2>
+
+            <div id="userInfo" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #f3f4f6; border-radius: 8px;"></div>
+
+            <div id="statsInfo" style="text-align: center; margin-bottom: 20px; padding: 16px; background: #ecfdf5; border: 1px solid #bbf7d0; border-radius: 8px;"></div>
+
+            <!-- Mood Update -->
+            <div style="margin-bottom: 16px;">
+                <h4 style="margin-bottom: 8px; color: #1f2937;">How are you feeling?</h4>
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="updateMood('happy', '😊')" class="emoji-btn">😊 Happy</button>
+                    <button onclick="updateMood('sad', '😢')" class="emoji-btn">😢 Sad</button>
+                    <button onclick="updateMood('anxious', '😰')" class="emoji-btn">😰 Anxious</button>
+                    <button onclick="updateMood('lonely', '😔')" class="emoji-btn">😔 Lonely</button>
+                    <button onclick="updateMood('excited', '🤗')" class="emoji-btn">🤗 Excited</button>
+                </div>
+            </div>
+
+            <!-- Main Actions -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <button onclick="startChat()" class="button purple">
+                    🎯 Find Friend
+                </button>
+                <button onclick="startAIChat()" class="button" style="background: #3b82f6;">
+                    🤖 AI Companion
+                </button>
+            </div>
+
+            <!-- Secondary Actions -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <button onclick="showProfile()" class="button green">
+                    👤 Profile
+                </button>
+                <button onclick="showWellnessCenter()" class="button" style="background: #f59e0b;">
+                    🌱 Wellness
+                </button>
+            </div>
+
+            <!-- Additional Features -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <button onclick="showJournal()" class="button" style="background: #8b5cf6;">
+                    📝 Journal
+                </button>
+                <button onclick="showMoodTracker()" class="button" style="background: #06b6d4;">
+                    📊 Mood Insights
+                </button>
+            </div>
+
+            <button onclick="logout()" class="button" style="background: #dc2626; width: 100%;">
+                🚪 Logout
+            </button>
+        </div>
+
+        <!-- AI Chat Section -->
+        <div class="card" id="aiChatSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #1f2937; margin: 0;">🤖 AI Companion</h2>
+                <button onclick="closeChatSection()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- AI Personality Selector -->
+            <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Choose AI Personality:</label>
+                <select id="aiPersonalitySelect" onchange="changeAIPersonality()" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="supportive">💙 Supportive Friend - Understanding & caring</option>
+                    <option value="professional">🎯 Professional Counselor - Structured guidance</option>
+                    <option value="empathetic">🤗 Empathetic Listener - Deep emotional support</option>
+                    <option value="motivational">⚡ Motivational Coach - Encouraging & uplifting</option>
+                </select>
+            </div>
+
+            <div id="aiChatMessages" style="height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 16px; background: #fafafa;"></div>
+
+            <!-- AI Chat Input -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="aiMessageInput" placeholder="Share your feelings..." style="flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;" onkeypress="handleAIKeyPress(event)">
+                <button onclick="sendAIMessage()" style="background: #3b82f6; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer;">
+                    📤
+                </button>
+            </div>
+
+            <!-- AI Quick Responses -->
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+                <button onclick="sendQuickAIMessage('I feel anxious today')" class="quick-btn">😰 Feeling anxious</button>
+                <button onclick="sendQuickAIMessage('I feel lonely')" class="quick-btn">😔 Feeling lonely</button>
+                <button onclick="sendQuickAIMessage('I need motivation')" class="quick-btn">⚡ Need motivation</button>
+                <button onclick="sendQuickAIMessage('I had a bad day')" class="quick-btn">😞 Bad day</button>
+            </div>
+        </div>
+
+        <!-- Anonymous Chat Section -->
+        <div class="card" id="chatSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #1f2937; margin: 0;">🎯 Anonymous Chat</h2>
+                <button onclick="closeChatSection()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+
+            <div id="chatPartner" style="text-align: center; margin-bottom: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;"></div>
+
+            <div id="chatMessages" style="height: 300px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fafafa;"></div>
+
+            <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                <span>Partner is typing</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <!-- Emoji Quick Reactions -->
+            <div style="display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;">
+                <button onclick="sendQuickEmoji('❤️')" class="emoji-btn">❤️</button>
+                <button onclick="sendQuickEmoji('😊')" class="emoji-btn">😊</button>
+                <button onclick="sendQuickEmoji('😢')" class="emoji-btn">😢</button>
+                <button onclick="sendQuickEmoji('👍')" class="emoji-btn">👍</button>
+                <button onclick="sendQuickEmoji('🤗')" class="emoji-btn">🤗</button>
+                <button onclick="sendQuickEmoji('😂')" class="emoji-btn">😂</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="messageInput" placeholder="Type your message..." style="flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;" onkeypress="handleTyping(event)">
+                <button id="voiceBtn" onclick="toggleVoiceRecording()" class="voice-btn" title="Voice Message">🎤</button>
+                <button onclick="sendMessage()" class="button" style="width: auto; padding: 12px 20px;">Send</button>
+            </div>
+
+            <div id="voiceRecording" style="display: none; text-align: center; margin-top: 8px; padding: 8px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+                <span>🔴 Recording... Tap microphone to stop</span>
+            </div>
+
+            <button onclick="endChat()" class="button" style="background: #dc2626; margin-top: 12px;">
+                ❌ End Chat
+            </button>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="success">
+            <div class="success-title">💙 Welcome to SoulConnect</div>
+            <div class="success-text">
+                <strong>Anonymous Friendship Builder</strong><br><br>
+                Connect with someone who understands you without judgment.<br><br>
+
+                <strong>Features:</strong><br>
+                • 💬 Anonymous conversations<br>
+                • 🎤 Voice messages<br>
+                • 😊 Emoji reactions<br>
+                • 📊 Mood tracking<br>
+                • 🌙 Dark mode<br>
+                • 📱 Mobile app experience<br><br>
+
+                <strong>Safe • Anonymous • Understanding</strong>
+            </div>
+        </div>
+
+        <!-- Desktop Feature Showcase (Hidden) -->
+        <div id="featureShowcase" class="feature-showcase" style="display: none;">
+            <h4 style="margin-bottom: 12px; color: #1f2937;">🚀 Features</h4>
+            <div style="font-size: 0.8rem; line-height: 1.4;">
+                <div style="margin-bottom: 8px;">🎤 Voice Messages</div>
+                <div style="margin-bottom: 8px;">😊 Emoji Reactions</div>
+                <div style="margin-bottom: 8px;">🌙 Dark Mode</div>
+                <div style="margin-bottom: 8px;">⌨️ Typing Indicators</div>
+                <div style="margin-bottom: 8px;">🔔 Push Notifications</div>
+                <div style="margin-bottom: 8px;">📊 Mood Tracking</div>
+                <div style="margin-bottom: 8px;">👤 Profile Management</div>
+                <div style="margin-bottom: 8px;">🛡️ Anonymous & Safe</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PWA Installation
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installPrompt.classList.remove('show');
+                showSuccess('🎉 App installed! Check your home screen.');
+            }
+            deferredPrompt = null;
+        });
+
+        dismissBtn.addEventListener('click', () => {
+            installPrompt.classList.remove('show');
+        });
+
+        // Global variables
+        let currentUser = null;
+        let authToken = null;
+        let currentChatRoom = null;
+        let isLoginMode = false;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let typingTimer = null;
+        let aiChatMode = false;
+        let aiPersonality = 'supportive';
+        let aiConversationHistory = [];
+        let lastActiveTime = Date.now();
+        let inactivityTimer = null;
+        let isDarkMode = false;
+        let deviceType = 'unknown';
+        let screenSize = 'unknown';
+
+        // Auth Functions
+        async function handleAuth(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const avatar = document.getElementById('avatar').value;
+            const mood = document.getElementById('mood').value;
+
+            if (!username || !password || (!isLoginMode && !email)) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Please wait...';
+            submitBtn.disabled = true;
+
+            try {
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+                const body = isLoginMode
+                    ? { username, password }
+                    : { username, email, password, avatar, mood };
+
+                const response = await fetch(`https://soulconnect-backend-4.onrender.com${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    authToken = data.token;
+                    localStorage.setItem('soulconnect_token', authToken);
+                    localStorage.setItem('soulconnect_user', JSON.stringify(currentUser));
+
+                    showDashboard();
+                    loadStats();
+                    showSuccess(data.message);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Network error. Check your internet connection.');
+            } finally {
+                submitBtn.textContent = isLoginMode ? '🔑 Sign In' : '📝 Create Account';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const authTitle = document.getElementById('authTitle');
+            const emailField = document.getElementById('email');
+            const avatarField = document.getElementById('avatar');
+            const moodField = document.getElementById('mood');
+            const submitBtn = document.getElementById('submitBtn');
+            const switchBtn = document.getElementById('switchBtn');
+
+            if (isLoginMode) {
+                authTitle.textContent = 'Welcome Back!';
+                emailField.style.display = 'none';
+                avatarField.style.display = 'none';
+                moodField.style.display = 'none';
+                submitBtn.textContent = '🔑 Sign In';
+                switchBtn.textContent = "Don't have an account? Sign up";
+            } else {
+                authTitle.textContent = 'Create Account';
+                emailField.style.display = 'block';
+                avatarField.style.display = 'block';
+                moodField.style.display = 'block';
+                submitBtn.textContent = '📝 Create Account';
+                switchBtn.textContent = 'Already have an account? Sign in';
+            }
+        }
+
+
+
+        async function loadStats() {
+            try {
+                const response = await fetch('https://soulconnect-backend-4.onrender.com/api/stats');
+                const data = await response.json();
+
+                if (data.success) {
+                    const statsInfo = document.getElementById('statsInfo');
+                    statsInfo.innerHTML = `
+                        <h4>📊 Community Stats</h4>
+                        <p>👥 ${data.stats.totalUsers} Total Users • 🟢 ${data.stats.onlineUsers} Online</p>
+                        <p>💬 ${data.stats.totalChats} Chats Started • 📝 ${data.stats.totalMessages} Messages Sent</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function startChat() {
+            try {
+                const response = await fetch('https://soulconnect-backend-4.onrender.com/api/chat/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentChatRoom = data.chatRoom;
+                    showChatInterface(data.partner);
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                showError('Failed to start chat. Please try again.');
+            }
+        }
+
+
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (!message) return;
+
+            try {
+                const response = await fetch('https://soulconnect-backend-4.onrender.com/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        chatRoomId: currentChatRoom.id,
+                        message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageInput.value = '';
+                    displayMessage(data.message, true);
+                } else {
+                    showError('Failed to send message');
+                }
+            } catch (error) {
+                showError('Failed to send message. Please try again.');
+            }
+        }
+
+        async function pollMessages() {
+            if (!currentChatRoom) return;
+
+            try {
+                const response = await fetch(`https://soulconnect-backend-4.onrender.com/api/chat/messages?chatRoomId=${currentChatRoom.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '';
+
+                    data.messages.forEach(msg => {
+                        displayMessage(msg, msg.userId === currentUser.id);
+                    });
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+            }
+
+            // Poll again in 2 seconds
+            setTimeout(pollMessages, 2000);
+        }
+
+        function displayMessage(message, isOwn) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin-bottom: 12px;
+                padding: 8px 12px;
+                border-radius: 12px;
+                max-width: 80%;
+                ${isOwn
+                    ? 'background: #2563eb; color: white; margin-left: auto; text-align: right;'
+                    : 'background: #f3f4f6; color: #1f2937; margin-right: auto;'
+                }
+            `;
+
+            messageDiv.innerHTML = `
+                <div style="font-weight: 500; font-size: 0.8rem; margin-bottom: 4px;">
+                    ${isOwn ? 'You' : message.username}
+                </div>
+                <div>${message.message}</div>
+                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 4px;">
+                    ${new Date(message.createdAt).toLocaleTimeString()}
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+        }
+
+        function endChat() {
+            currentChatRoom = null;
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            showSuccess('Chat ended. You can start a new chat anytime!');
+        }
+
+        function logout() {
+            currentUser = null;
+            authToken = null;
+            currentChatRoom = null;
+            localStorage.removeItem('soulconnect_token');
+            localStorage.removeItem('soulconnect_user');
+
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('authSection').style.display = 'block';
+
+            // Reset form
+            document.getElementById('authForm').reset();
+            showSuccess('Logged out successfully!');
+        }
+
+        // Helper functions
+        function getAvatarEmoji(avatar) {
+            const avatars = {
+                fox: '🦊', cat: '🐱', dog: '🐶', bear: '🐻', rabbit: '🐰'
+            };
+            return avatars[avatar] || '🦊';
+        }
+
+        function getMoodEmoji(mood) {
+            const moods = {
+                happy: '😊', sad: '😢', anxious: '😰', lonely: '😔', excited: '🤗'
+            };
+            return moods[mood] || '😊';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        // Feature Tour
+        function startFeatureTour() {
+            const tourSteps = [
+                {
+                    title: "🌙 Dark Mode Toggle",
+                    message: "Tap the moon/sun button (top right) to switch between light and dark themes. Your preference is saved automatically!"
+                },
+                {
+                    title: "📝 Smart Registration",
+                    message: "Create your account with username, email, and password. Choose your avatar (🦊🐱🐶🐻🐰) and current mood!"
+                },
+                {
+                    title: "💬 Anonymous Matching",
+                    message: "Get matched with other online users for anonymous conversations. No personal info shared!"
+                },
+                {
+                    title: "🎤 Voice Messages",
+                    message: "In chat, tap the microphone button to record and send voice messages. Perfect for expressing emotions!"
+                },
+                {
+                    title: "😊 Quick Emoji Reactions",
+                    message: "Use the emoji buttons (❤️😊😢👍🤗😂) for quick reactions and emotional responses!"
+                },
+                {
+                    title: "📊 Mood Tracking",
+                    message: "Update your mood on the dashboard. Track your emotional journey over time!"
+                },
+                {
+                    title: "🔔 Push Notifications",
+                    message: "Get notified of new messages even when the app is in the background!"
+                },
+                {
+                    title: "📱 PWA Installation",
+                    message: "Install SoulConnect as an app on your device for the best experience!"
+                },
+                {
+                    title: "🎯 Device Optimization",
+                    message: `Your ${deviceType} layout is optimized for ${screenSize} screens. All features are fully visible and easy to use!`
+                }
+            ];
+
+            let currentStep = 0;
+
+            function showNextStep() {
+                if (currentStep < tourSteps.length) {
+                    const step = tourSteps[currentStep];
+                    const continueText = currentStep < tourSteps.length - 1 ? "\n\nTap OK to continue..." : "\n\nTour complete! Enjoy SoulConnect! 🎉";
+
+                    alert(`${step.title}\n\n${step.message}${continueText}`);
+                    currentStep++;
+
+                    if (currentStep < tourSteps.length) {
+                        setTimeout(showNextStep, 500);
+                    }
+                } else {
+                    showSuccess("🎉 Feature tour complete!\n\nYou're now ready to use all of SoulConnect's amazing features!\n\nStart by creating an account or signing in!");
+                }
+            }
+
+            showNextStep();
+        }
+
+        // New Feature Functions
+
+        // Dark Mode Toggle
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('soulconnect_theme', 'dark');
+            } else {
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('soulconnect_theme', 'light');
+            }
+        }
+
+        // Voice Recording
+        async function toggleVoiceRecording() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            const voiceRecording = document.getElementById('voiceRecording');
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        sendVoiceMessage(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    voiceBtn.classList.add('recording');
+                    voiceRecording.style.display = 'block';
+
+                } catch (error) {
+                    showError('Microphone access denied. Please allow microphone access to send voice messages.');
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+                voiceRecording.style.display = 'none';
+            }
+        }
+
+        async function sendVoiceMessage(audioBlob) {
+            // Convert audio to base64 for demo (in production, upload to server)
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64Audio = reader.result.split(',')[1];
+
+                try {
+                    const response = await fetch('https://soulconnect-backend-4.onrender.com/api/chat/send', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            chatRoomId: currentChatRoom.id,
+                            message: '🎤 Voice Message',
+                            type: 'voice',
+                            audioData: base64Audio
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        displayMessage(data.message, true);
+                    } else {
+                        showError('Failed to send voice message');
+                    }
+                } catch (error) {
+                    showError('Failed to send voice message. Please try again.');
+                }
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        // Quick Emoji Reactions
+        async function sendQuickEmoji(emoji) {
+            try {
+                const response = await fetch('https://soulconnect-backend-4.onrender.com/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        chatRoomId: currentChatRoom.id,
+                        message: emoji,
+                        type: 'emoji'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMessage(data.message, true);
+                } else {
+                    showError('Failed to send emoji');
+                }
+            } catch (error) {
+                showError('Failed to send emoji. Please try again.');
+            }
+        }
+
+        // Typing Indicator
+        function handleTyping(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+                return;
+            }
+
+            // Show typing indicator to other user (simplified for demo)
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                // Hide typing indicator after 2 seconds of no typing
+            }, 2000);
+        }
+
+        // Enhanced Message Display
+        function displayMessage(message, isOwn) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+
+            const isVoice = message.type === 'voice';
+            const isEmoji = message.type === 'emoji';
+
+            messageDiv.style.cssText = `
+                margin-bottom: 12px;
+                padding: 8px 12px;
+                border-radius: 12px;
+                max-width: 80%;
+                ${isOwn
+                    ? 'background: #2563eb; color: white; margin-left: auto; text-align: right;'
+                    : 'background: #f3f4f6; color: #1f2937; margin-right: auto;'
+                }
+                ${isEmoji ? 'font-size: 2rem; text-align: center; padding: 4px 8px;' : ''}
+            `;
+
+            let messageContent = message.message;
+
+            if (isVoice) {
+                messageContent = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>🎤</span>
+                        <button onclick="playVoiceMessage('${message.audioData}')" style="background: none; border: none; color: inherit; cursor: pointer;">
+                            ▶️ Voice Message
+                        </button>
+                    </div>
+                `;
+            }
+
+            messageDiv.innerHTML = `
+                <div style="font-weight: 500; font-size: 0.8rem; margin-bottom: 4px;">
+                    ${isOwn ? 'You' : message.username}
+                </div>
+                <div>${messageContent}</div>
+                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 4px;">
+                    ${new Date(message.createdAt).toLocaleTimeString()}
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function playVoiceMessage(audioData) {
+            try {
+                const audio = new Audio(`data:audio/wav;base64,${audioData}`);
+                audio.play();
+            } catch (error) {
+                showError('Failed to play voice message');
+            }
+        }
+
+        // Mood Tracking
+        async function updateMood(mood, emoji) {
+            try {
+                currentUser.mood = mood;
+                localStorage.setItem('soulconnect_user', JSON.stringify(currentUser));
+
+                // Update UI
+                showDashboard();
+                showSuccess(`Mood updated to ${emoji} ${mood}!`);
+
+                // Track mood history (simplified)
+                const moodHistory = JSON.parse(localStorage.getItem('soulconnect_mood_history') || '[]');
+                moodHistory.push({
+                    mood,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('soulconnect_mood_history', JSON.stringify(moodHistory));
+
+            } catch (error) {
+                showError('Failed to update mood');
+            }
+        }
+
+        // Profile Management
+        function showProfile() {
+            const moodHistory = JSON.parse(localStorage.getItem('soulconnect_mood_history') || '[]');
+            const recentMoods = moodHistory.slice(-5).reverse();
+
+            let moodHistoryText = 'Recent mood updates:\n';
+            recentMoods.forEach(entry => {
+                const date = new Date(entry.timestamp).toLocaleDateString();
+                moodHistoryText += `• ${getMoodEmoji(entry.mood)} ${entry.mood} (${date})\n`;
+            });
+
+            const profileInfo = `
+👤 Your SoulConnect Profile
+
+Username: ${currentUser.username}
+Avatar: ${getAvatarEmoji(currentUser.avatar)} ${currentUser.avatar}
+Current Mood: ${getMoodEmoji(currentUser.mood)} ${currentUser.mood}
+Joined: ${new Date(currentUser.createdAt).toLocaleDateString()}
+Last Seen: ${new Date(currentUser.lastSeen).toLocaleDateString()}
+
+${moodHistoryText}
+
+💡 Tip: Regular mood tracking helps you understand your emotional patterns!
+            `;
+
+            alert(profileInfo);
+        }
+
+        // Initialize
+        document.getElementById('authForm').addEventListener('submit', handleAuth);
+
+        // Push Notifications
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    showSuccess('🔔 Notifications enabled! You\'ll get alerts for new messages.');
+                }
+            }
+        }
+
+        function showNotification(title, body, icon = '💬') {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='70' font-size='60' x='50' text-anchor='middle'>${icon}</text></svg>`,
+                    badge: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%232563eb'/></svg>`
+                });
+            }
+        }
+
+        // Enhanced Message Polling with Notifications
+        async function pollMessages() {
+            if (!currentChatRoom) return;
+
+            try {
+                const response = await fetch(`https://soulconnect-backend-4.onrender.com/api/chat/messages?chatRoomId=${currentChatRoom.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    const currentMessageCount = chatMessages.children.length;
+
+                    chatMessages.innerHTML = '';
+
+                    data.messages.forEach(msg => {
+                        displayMessage(msg, msg.userId === currentUser.id);
+                    });
+
+                    // Show notification for new messages
+                    if (data.messages.length > currentMessageCount && document.hidden) {
+                        const lastMessage = data.messages[data.messages.length - 1];
+                        if (lastMessage.userId !== currentUser.id) {
+                            showNotification(
+                                'New message from ' + lastMessage.username,
+                                lastMessage.message,
+                                lastMessage.type === 'emoji' ? lastMessage.message : '💬'
+                            );
+                        }
+                    }
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+            }
+
+            // Poll again in 2 seconds
+            setTimeout(pollMessages, 2000);
+        }
+
+        // Mobile App Functions
+        function initMobileApp() {
+            // Check if running as PWA
+            if (window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true) {
+                isMobileApp = true;
+                document.body.classList.add('mobile-app');
+
+                // Show mobile status bar and navigation
+                document.getElementById('mobileStatusBar').classList.add('show');
+                document.getElementById('mobileNav').classList.add('show');
+
+                // Update status bar
+                updateStatusBar();
+                setInterval(updateStatusBar, 1000);
+
+                // Add mobile gestures
+                addMobileGestures();
+
+                // Hide install prompt
+                document.getElementById('installPrompt').style.display = 'none';
+            }
+        }
+
+        function updateStatusBar() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('statusTime').textContent = timeString;
+
+            // Simulate battery and signal (in real app, use Battery API)
+            const battery = Math.floor(Math.random() * 30) + 70; // 70-100%
+            document.getElementById('statusBattery').textContent = battery > 80 ? '🔋' : battery > 20 ? '🪫' : '🔴';
+        }
+
+        function showSection(section) {
+            currentSection = section;
+
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Handle section switching
+            switch(section) {
+                case 'home':
+                    if (currentUser) {
+                        document.getElementById('dashboardSection').style.display = 'block';
+                        document.getElementById('chatSection').style.display = 'none';
+                        document.getElementById('authSection').style.display = 'none';
+                    } else {
+                        document.getElementById('authSection').style.display = 'block';
+                        document.getElementById('dashboardSection').style.display = 'none';
+                        document.getElementById('chatSection').style.display = 'none';
+                    }
+                    break;
+                case 'chat':
+                    if (currentUser) {
+                        startChat();
+                    } else {
+                        showError('Please login first to start chatting');
+                        showSection('home');
+                    }
+                    break;
+                case 'profile':
+                    if (currentUser) {
+                        showProfile();
+                    } else {
+                        showError('Please login first to view profile');
+                        showSection('home');
+                    }
+                    break;
+                case 'settings':
+                    showSettings();
+                    break;
+            }
+
+            // Add haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        }
+
+        function showSettings() {
+            const settings = `
+🔧 SoulConnect Settings
+
+🌙 Theme: ${isDarkMode ? 'Dark' : 'Light'} Mode
+📱 Device: ${deviceType}
+🔔 Notifications: ${Notification.permission}
+📊 App Version: 2.0.0
+
+Options:
+• Tap "Take Tour" for feature guide
+• Toggle theme with moon/sun button
+• Enable notifications for alerts
+
+Tap OK to close settings.
+            `;
+
+            if (confirm(settings + '\n\nWould you like to take the feature tour?')) {
+                startFeatureTour();
+            }
+        }
+
+        function addMobileGestures() {
+            let startY = 0;
+            let currentY = 0;
+
+            // Pull to refresh
+            document.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                pullStartY = startY;
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+
+                if (diff > 0 && window.scrollY === 0 && !isPulling) {
+                    isPulling = true;
+                    const pullToRefresh = document.getElementById('pullToRefresh');
+
+                    if (diff > 100) {
+                        pullToRefresh.classList.add('show');
+                        pullToRefresh.innerHTML = '<span>🔄 Release to refresh</span>';
+                    } else {
+                        pullToRefresh.innerHTML = '<span>⬇️ Pull to refresh</span>';
+                    }
+                }
+            });
+
+            document.addEventListener('touchend', (e) => {
+                const diff = currentY - pullStartY;
+
+                if (isPulling && diff > 100) {
+                    // Trigger refresh
+                    const pullToRefresh = document.getElementById('pullToRefresh');
+                    pullToRefresh.innerHTML = '<span>🔄 Refreshing...</span>';
+
+                    setTimeout(() => {
+                        pullToRefresh.classList.remove('show');
+                        isPulling = false;
+
+                        // Refresh current section
+                        if (currentSection === 'home' && currentUser) {
+                            loadStats();
+                        }
+
+                        showSuccess('🔄 Refreshed!');
+                    }, 1000);
+                } else {
+                    document.getElementById('pullToRefresh').classList.remove('show');
+                    isPulling = false;
+                }
+            });
+        }
+
+        // Device Detection and Layout Optimization
+        function detectDevice() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const userAgent = navigator.userAgent;
+
+            // Detect device type
+            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+                if (width <= 480) {
+                    deviceType = 'Mobile Phone';
+                    screenSize = 'Small';
+                } else if (width <= 768) {
+                    deviceType = 'Mobile Tablet';
+                    screenSize = 'Medium';
+                } else {
+                    deviceType = 'Large Tablet';
+                    screenSize = 'Large';
+                }
+            } else {
+                if (width <= 768) {
+                    deviceType = 'Small Desktop';
+                    screenSize = 'Medium';
+                } else if (width <= 1024) {
+                    deviceType = 'Desktop';
+                    screenSize = 'Large';
+                } else {
+                    deviceType = 'Large Desktop';
+                    screenSize = 'Extra Large';
+                }
+            }
+
+            // Update device info display
+            const deviceInfo = document.getElementById('deviceInfo');
+            deviceInfo.innerHTML = `
+                📱 ${deviceType} • 📏 ${width}x${height} • 🎯 ${screenSize} Layout
+            `;
+
+            // Show feature showcase on desktop
+            if (width >= 1025) {
+                const featureShowcase = document.getElementById('featureShowcase');
+                featureShowcase.classList.add('show');
+            }
+
+            // Optimize layout based on device
+            optimizeLayoutForDevice();
+        }
+
+        function optimizeLayoutForDevice() {
+            const width = window.innerWidth;
+
+            // Mobile optimizations
+            if (width <= 480) {
+                // Smaller buttons and text for mobile
+                document.documentElement.style.setProperty('--button-padding', '12px');
+                document.documentElement.style.setProperty('--font-size-base', '14px');
+
+                // Hide some less important elements on very small screens
+                const successMessage = document.querySelector('.success');
+                if (successMessage) {
+                    successMessage.style.fontSize = '0.8rem';
+                }
+            }
+
+            // Tablet optimizations
+            else if (width <= 768) {
+                // Apply dashboard layout for tablets
+                const dashboardSection = document.getElementById('dashboardSection');
+                if (dashboardSection && dashboardSection.style.display !== 'none') {
+                    dashboardSection.classList.add('dashboard-layout');
+                }
+            }
+
+            // Desktop optimizations
+            else if (width >= 1025) {
+                // Apply chat layout for desktop
+                const chatSection = document.getElementById('chatSection');
+                if (chatSection && chatSection.style.display !== 'none') {
+                    chatSection.classList.add('chat-layout');
+                }
+            }
+        }
+
+        // Enhanced Dashboard Layout
+        function showDashboard() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+
+            const userInfo = document.getElementById('userInfo');
+            userInfo.innerHTML = `
+                <h3>👋 Hello, ${currentUser.username}!</h3>
+                <p>${getAvatarEmoji(currentUser.avatar)} ${currentUser.avatar} • ${getMoodEmoji(currentUser.mood)} ${currentUser.mood}</p>
+                <p><small>Joined: ${new Date(currentUser.createdAt).toLocaleDateString()}</small></p>
+            `;
+
+            // Apply responsive layout
+            optimizeLayoutForDevice();
+        }
+
+        // Enhanced Chat Interface
+        function showChatInterface(partner) {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'block';
+
+            const chatPartner = document.getElementById('chatPartner');
+            chatPartner.innerHTML = `
+                <h4>💬 Chatting with ${partner.username}</h4>
+                <p>${getAvatarEmoji(partner.avatar)} Feeling ${getMoodEmoji(partner.mood)} ${partner.mood}</p>
+            `;
+
+            // Apply responsive layout
+            optimizeLayoutForDevice();
+
+            // Start polling for messages
+            pollMessages();
+        }
+
+        // Responsive Window Resize Handler
+        window.addEventListener('resize', () => {
+            detectDevice();
+            optimizeLayoutForDevice();
+        });
+
+        // Load theme preference, detect device, and request notifications
+        window.addEventListener('load', () => {
+            // Initialize mobile app
+            initMobileApp();
+
+            // Detect device and optimize layout
+            detectDevice();
+
+            const savedTheme = localStorage.getItem('soulconnect_theme');
+            if (savedTheme === 'dark') {
+                toggleTheme();
+            }
+
+            // Request notification permission after a short delay
+            setTimeout(requestNotificationPermission, 2000);
+
+            // Show welcome message
+            setTimeout(() => {
+                if (isMobileApp) {
+                    showSuccess(`📱 Welcome to SoulConnect!\n\nYour mobile app is ready!\n\nStart by creating an account or signing in to connect with others anonymously.`);
+                } else {
+                    showSuccess(`💙 Welcome to SoulConnect!\n\nAnonymous friendship builder for meaningful connections.\n\nInstall as an app for the best mobile experience!`);
+                }
+            }, 1500);
+        });
+
+        // Check for existing session
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('soulconnect_token');
+            const user = localStorage.getItem('soulconnect_user');
+
+            if (token && user) {
+                authToken = token;
+                currentUser = JSON.parse(user);
+                showDashboard();
+                loadStats();
+            }
+        });
+
+        // AI Chat Functions
+        function startAIChat() {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('aiChatSection').style.display = 'block';
+
+            // Initialize AI chat with welcome message
+            if (aiConversationHistory.length === 0) {
+                addAIMessage('ai', getAIWelcomeMessage());
+            }
+        }
+
+        function changeAIPersonality() {
+            aiPersonality = document.getElementById('aiPersonalitySelect').value;
+            addAIMessage('ai', getPersonalityChangeMessage());
+        }
+
+        function handleAIKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendAIMessage();
+            }
+        }
+
+        function sendQuickAIMessage(message) {
+            document.getElementById('aiMessageInput').value = message;
+            sendAIMessage();
+        }
+
+        async function sendAIMessage() {
+            const input = document.getElementById('aiMessageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message
+            addAIMessage('user', message);
+            input.value = '';
+
+            // Show typing indicator
+            showAITyping();
+
+            // Generate AI response
+            setTimeout(() => {
+                hideAITyping();
+                const response = generateAIResponse(message);
+                addAIMessage('ai', response);
+            }, 1500 + Math.random() * 1000); // Realistic response time
+        }
+
+        function addAIMessage(sender, message) {
+            const messagesDiv = document.getElementById('aiChatMessages');
+            const messageDiv = document.createElement('div');
+
+            const isUser = sender === 'user';
+            messageDiv.style.cssText = `
+                margin-bottom: 12px;
+                padding: 12px;
+                border-radius: 12px;
+                max-width: 80%;
+                ${isUser ? 'margin-left: auto; background: #3b82f6; color: white; text-align: right;' : 'background: white; border: 1px solid #e5e7eb;'}
+            `;
+
+            const avatar = isUser ? '👤' : getAIAvatar();
+            messageDiv.innerHTML = `
+                <div style="font-size: 0.8rem; margin-bottom: 4px; opacity: 0.7;">
+                    ${avatar} ${isUser ? 'You' : 'AI Companion'}
+                </div>
+                <div>${message}</div>
+                <div style="font-size: 0.7rem; margin-top: 4px; opacity: 0.5;">
+                    ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Store in conversation history
+            aiConversationHistory.push({sender, message, timestamp: Date.now()});
+        }
+
+        function showAITyping() {
+            const messagesDiv = document.getElementById('aiChatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'aiTyping';
+            typingDiv.style.cssText = `
+                margin-bottom: 12px;
+                padding: 12px;
+                border-radius: 12px;
+                background: white;
+                border: 1px solid #e5e7eb;
+                max-width: 80%;
+            `;
+            typingDiv.innerHTML = `
+                <div style="font-size: 0.8rem; margin-bottom: 4px; opacity: 0.7;">
+                    ${getAIAvatar()} AI Companion
+                </div>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <span>Thinking</span>
+                    <div style="display: flex; gap: 2px;">
+                        <div style="width: 4px; height: 4px; background: #3b82f6; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+                        <div style="width: 4px; height: 4px; background: #3b82f6; border-radius: 50%; animation: pulse 1.5s infinite 0.2s;"></div>
+                        <div style="width: 4px; height: 4px; background: #3b82f6; border-radius: 50%; animation: pulse 1.5s infinite 0.4s;"></div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideAITyping() {
+            const typingDiv = document.getElementById('aiTyping');
+            if (typingDiv) typingDiv.remove();
+        }
+
+        // OpenRouter AI Integration
+        async function generateAIResponse(userMessage) {
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer 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',
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': 'https://soulconnect-app.com',
+                        'X-Title': 'SoulConnect - Mental Health Companion'
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek/deepseek-r1-0528:free',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: getAISystemPrompt()
+                            },
+                            ...aiConversationHistory.slice(-10).map(msg => ({
+                                role: msg.sender === 'user' ? 'user' : 'assistant',
+                                content: msg.message
+                            })),
+                            {
+                                role: 'user',
+                                content: userMessage
+                            }
+                        ],
+                        max_tokens: 300,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('AI service temporarily unavailable');
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+
+            } catch (error) {
+                console.error('AI Error:', error);
+                return getFallbackResponse(userMessage);
+            }
+        }
+
+        function getAISystemPrompt() {
+            const prompts = {
+                supportive: `You are a supportive friend in a mental health app called SoulConnect. You provide understanding, caring responses to help users feel heard and supported. Keep responses warm, empathetic, and under 150 words. Focus on validation and gentle encouragement.`,
+
+                professional: `You are a professional counselor in SoulConnect, a mental health app. Provide structured, evidence-based guidance while maintaining warmth. Use therapeutic techniques and ask thoughtful questions. Keep responses professional yet caring, under 150 words.`,
+
+                empathetic: `You are an empathetic listener in SoulConnect. Your role is to provide deep emotional support and understanding. Reflect feelings, validate experiences, and offer comfort. Be deeply caring and intuitive in your responses, under 150 words.`,
+
+                motivational: `You are a motivational coach in SoulConnect. Provide encouraging, uplifting responses that inspire hope and action. Focus on strengths, possibilities, and positive reframing. Be energetic yet sensitive, under 150 words.`
+            };
+
+            return prompts[aiPersonality] || prompts.supportive;
+        }
+
+        function getFallbackResponse(userMessage) {
+            const responses = {
+                anxious: [
+                    "I understand you're feeling anxious. That's completely valid. Try taking three deep breaths with me. Remember, anxiety is temporary and you've gotten through difficult moments before. 💙",
+                    "Anxiety can feel overwhelming, but you're not alone. Focus on what you can control right now. What's one small thing that might help you feel a bit calmer? 🌱"
+                ],
+                lonely: [
+                    "Feeling lonely is so hard, and I want you to know that your feelings matter. Even though it might not feel like it, you are worthy of connection and care. I'm here with you right now. 🤗",
+                    "Loneliness can feel so heavy. Remember that reaching out, like you're doing now, takes courage. You're taking a positive step by sharing your feelings. 💜"
+                ],
+                sad: [
+                    "I hear that you're going through a tough time. It's okay to feel sad - your emotions are valid. Sometimes we need to sit with difficult feelings before they can pass. 🌙",
+                    "Sadness is part of being human, and it shows your capacity to care deeply. Be gentle with yourself today. What's one small act of self-care you could try? 💙"
+                ],
+                default: [
+                    "Thank you for sharing with me. I'm here to listen and support you. Your feelings and experiences matter. How are you taking care of yourself today? 💙",
+                    "I appreciate you opening up. It takes courage to share our feelings. Remember, you don't have to face everything alone. What would be most helpful for you right now? 🌱"
+                ]
+            };
+
+            const messageType = detectMessageType(userMessage);
+            const responseArray = responses[messageType] || responses.default;
+            return responseArray[Math.floor(Math.random() * responseArray.length)];
+        }
+
+        function detectMessageType(message) {
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('anxious') || lowerMessage.includes('anxiety') || lowerMessage.includes('worried')) return 'anxious';
+            if (lowerMessage.includes('lonely') || lowerMessage.includes('alone') || lowerMessage.includes('isolated')) return 'lonely';
+            if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('down')) return 'sad';
+            return 'default';
+        }
+
+        function getAIWelcomeMessage() {
+            const welcomes = {
+                supportive: "Hi there! 💙 I'm your AI companion, here to listen and support you. Feel free to share whatever's on your mind - I'm here for you.",
+                professional: "Hello! I'm your AI counselor. I'm here to provide guidance and support in a safe, confidential space. What would you like to talk about today?",
+                empathetic: "Welcome! 🤗 I'm here to listen with an open heart. Whatever you're feeling or experiencing, you can share it with me. You're not alone.",
+                motivational: "Hey there! ⚡ I'm your motivational companion, ready to help you find your strength and potential. What's on your mind today?"
+            };
+            return welcomes[aiPersonality] || welcomes.supportive;
+        }
+
+        function getPersonalityChangeMessage() {
+            return `I've switched to ${aiPersonality} mode. How can I best support you today? 🌟`;
+        }
+
+        function getAIAvatar() {
+            const avatars = {
+                supportive: '💙',
+                professional: '🎯',
+                empathetic: '🤗',
+                motivational: '⚡'
+            };
+            return avatars[aiPersonality] || '🤖';
+        }
+
+        // Professional Features
+        function showWellnessCenter() {
+            showSuccess('🌱 Wellness Center\n\n• Breathing exercises\n• Meditation guides\n• Coping strategies\n• Self-care tips\n• Crisis resources\n\nFeature coming soon!');
+        }
+
+        function showJournal() {
+            showSuccess('📝 Personal Journal\n\n• Daily mood tracking\n• Thought recording\n• Gratitude practice\n• Progress insights\n• Private & secure\n\nFeature coming soon!');
+        }
+
+        function showMoodTracker() {
+            showSuccess('📊 Mood Insights\n\n• Weekly mood patterns\n• Trigger identification\n• Progress tracking\n• Personalized tips\n• Data visualization\n\nFeature coming soon!');
+        }
+
+        // Enhanced AI Chat Integration
+        async function sendAIMessage() {
+            const input = document.getElementById('aiMessageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message
+            addAIMessage('user', message);
+            input.value = '';
+
+            // Show typing indicator
+            showAITyping();
+
+            // Generate AI response using OpenRouter
+            try {
+                const response = await generateAIResponse(message);
+                hideAITyping();
+                addAIMessage('ai', response);
+            } catch (error) {
+                hideAITyping();
+                addAIMessage('ai', 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment. 💙');
+            }
+        }
+
+        // Show welcome message
+        setTimeout(() => {
+            showSuccess('💙 Welcome to SoulConnect!\n\nYour mental health companion is ready!\n\n• Chat with AI when you need support\n• Find anonymous friends\n• Track your mood\n• Access wellness resources\n\nYou\'re never alone! 🤗');
+        }, 1000);
+
+        // Service Worker Registration (for PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
