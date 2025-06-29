@@ -1,1 +1,1 @@
-# soulconnect-frontend
+# soulconnect
